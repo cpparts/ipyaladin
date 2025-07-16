@@ -140,6 +140,14 @@ export default class MessageHandler {
     }
   }
 
+  handleRemoveOverlay(msg) {
+    const overlay_names = msg["name"];
+    for (const overlay_name of overlay_names) {
+      console.info(`Sending removeOverlay for ${overlay_name}`);
+      this.aladin.removeOverlay(overlay_name);
+    }
+  }
+
   handleChangeColormap(msg) {
     this.aladin.getBaseImageLayer().setColormap(msg["colormap"]);
   }

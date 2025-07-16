@@ -956,6 +956,25 @@ class Aladin(anywidget.AnyWidget):
         )
 
     @widget_should_be_loaded
+    def remove_overlay(self, overlay_name: Union[Iterable[str], str]) -> None:
+        """Remove an overlay layer defined by an STC-S string.
+
+        Parameters
+        ----------
+        overlay_name : str, Iterable[str]
+            The STC-S string //or an iterable of STC-S strings.
+
+        """
+        overlay_name = [overlay_name] if isinstance(overlay_name, str) else overlay_name
+
+        self.send(
+            {
+                "event_name": "remove_overlay",
+                "name": overlay_name,
+            }
+        )
+
+    @widget_should_be_loaded
     def set_color_map(self, color_map_name: str) -> None:
         """Change the color map of the Aladin Lite widget.
 

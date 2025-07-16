@@ -280,6 +280,7 @@ export default class EventHandler {
       add_MOC_from_URL: this.messageHandler.handleAddMOCFromURL,
       add_MOC_from_dict: this.messageHandler.handleAddMOCFromDict,
       add_overlay: this.messageHandler.handleAddOverlay,
+      remove_overlay: this.messageHandler.handleRemoveOverlay,
       change_colormap: this.messageHandler.handleChangeColormap,
       get_JPG_thumbnail: this.messageHandler.handleGetJPGThumbnail,
       trigger_selection: this.messageHandler.handleTriggerSelection,
