@@ -260,8 +260,8 @@ class Aladin(anywidget.AnyWidget):
         elif event_type == "save_view_as_image":
             self._save_file(message["path"], buffers[0])
         elif event_type == "current_overlays":
-            self.listener_callback["current_overlays"](message["content"])
             self._overlays = message["content"]["overlays"]
+            self.listener_callback["current_overlays"](message["content"])
 
     @property
     def selected_objects(self) -> List[Table]:
