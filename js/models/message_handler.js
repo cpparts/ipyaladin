@@ -141,7 +141,7 @@ export default class MessageHandler {
   }
 
   handleRemoveOverlay = (msg) => {
-    const overlay_names = msg["name"];
+    const overlay_names = msg["overlay_names"];
     for (const overlay_name of overlay_names) {
       console.info(`Sending removeOverlay for ${overlay_name}`);
       this.aladin.removeOverlay(overlay_name);

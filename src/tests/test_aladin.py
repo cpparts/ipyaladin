@@ -265,7 +265,12 @@ def test_remove_overlay(
     mock_send = Mock()
     monkeypatch.setattr(Aladin, "send", mock_send)
     aladin.remove_overlay(overlay_names)
-    name_info = mock_send.call_args[0][0]["name"]
+
+    event_name = mock_send.call_args[0][0]["event_name"]
+    assert isinstance(event_name, str)
+    assert event_name == "remove_overlay"
+
+    name_info = mock_send.call_args[0][0]["overlay_names"]
     assert isinstance(name_info, list)
     assert name_info[0] in overlay_names
 

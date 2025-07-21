@@ -985,12 +985,14 @@ class Aladin(anywidget.AnyWidget):
             The string or an iterable of strings.
 
         """
-        overlay_name = [overlay_name] if isinstance(overlay_name, str) else overlay_name
+        overlay_names = (
+            [overlay_name] if isinstance(overlay_name, str) else overlay_name
+        )
 
         self.send(
             {
                 "event_name": "remove_overlay",
-                "name": overlay_name,
+                "overlay_names": overlay_names,
             }
         )
 
@@ -1054,7 +1056,8 @@ class Aladin(anywidget.AnyWidget):
         Parameters
         ----------
         listener_type : str
-            Can either be 'object_hovered', 'object_clicked', 'click' or 'select'
+            Can either be 'object_hovered', 'object_clicked', 'click', 'select',
+            or 'current_overlays'
         callback : Callable
             A python function to be called when the event corresponding to the
             listener_type is detected
@@ -1073,7 +1076,8 @@ class Aladin(anywidget.AnyWidget):
         else:
             raise ValueError(
                 "listener_type must be 'object_hovered', "
-                "'object_clicked', 'click' or 'select'"
+                "'object_clicked', 'click', 'select', "
+                "or 'current_overlays'"
             )
 
     @widget_should_be_loaded
