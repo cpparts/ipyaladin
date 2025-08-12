@@ -183,6 +183,10 @@ class Aladin(anywidget.AnyWidget):
         [],
         help="A list of overlays on the widget.",
     ).tag(sync=True)
+    _overlays_dict = traitlets.Dict(
+        {},
+        help="A dictionary of overlays on the widget.",
+    ).tag(sync=True)
 
     # content of the last click
     clicked_object = traitlets.Dict().tag(sync=True)
@@ -508,6 +512,29 @@ class Aladin(anywidget.AnyWidget):
             }
         )
 
+    def make_unique_name(self, name: str) -> str:
+        """Create a unique layer name.
+
+        Parameters
+        ----------
+        name : str
+            The current name of the layer to be added to the widget.
+
+        Returns
+        -------
+        unique_name
+            A string that is a unique name for the layer being added.
+
+        """
+        unique_name = name
+        i = 1
+
+        while unique_name in self._overlays:
+            unique_name = f"{name}_{i}"
+            i += 1
+
+        return unique_name
+
     def add_markers(
         self, markers: Union[Marker, List[Marker]], **catalog_options: any
     ) -> None:
@@ -530,6 +557,17 @@ class Aladin(anywidget.AnyWidget):
         """
         if not isinstance(markers, list):
             markers = [markers]
+
+        if "name" not in catalog_options:
+            unique_name = self.make_unique_name(name="catalog_python")
+            catalog_options["name"] = unique_name
+
+        self._overlays_dict[catalog_options["name"]] = {
+            "type": "marker",
+            "markers": [marker.__dict__ for marker in markers],
+            "options": catalog_options,
+        }
+
         self.send(
             {
                 "event_name": "add_marker",
@@ -653,6 +691,17 @@ class Aladin(anywidget.AnyWidget):
         """
         if votable_options is None:
             votable_options = {}
+
+        if "name" not in votable_options:
+            unique_name = self.make_unique_name(name="catalog_python")
+            votable_options["name"] = unique_name
+
+        self._overlays_dict[votable_options["name"]] = {
+            "type": "catalog",
+            "votable_URL": votable_URL,
+            "options": votable_options,
+        }
+
         self.send(
             {
                 "event_name": "add_catalog_from_URL",
@@ -861,6 +910,16 @@ class Aladin(anywidget.AnyWidget):
             table_options["shape"] = shape
         table_bytes = io.BytesIO()
         table.write(table_bytes, format="votable")
+
+        if "name" not in table_options:
+            unique_name = self.make_unique_name(name="catalog_python")
+            table_options["name"] = unique_name
+
+        self._overlays_dict[table_options["name"]] = {
+            "type": "table",
+            "options": table_options,
+        }
+
         self.send(
             {"event_name": "add_table", "options": table_options},
             buffers=[table_bytes.getvalue()],
@@ -938,6 +997,16 @@ class Aladin(anywidget.AnyWidget):
             # Define behavior for each region type
             regions_infos.append(RegionInfos(region_element).to_clean_dict())
 
+        if "name" not in graphic_options:
+            unique_name = self.make_unique_name(name="overlay_python")
+            graphic_options["name"] = unique_name
+
+        self._overlays_dict[graphic_options["name"]] = {
+            "type": "overlay",
+            "regions_infos": regions_infos,
+            "options": graphic_options,
+        }
+
         self.send(
             {
                 "event_name": "add_overlay",
@@ -1003,11 +1072,21 @@ class Aladin(anywidget.AnyWidget):
             for region_element in region_list
         ]
 
+        if "name" not in overlay_options:
+            unique_name = self.make_unique_name(name="overlay_python")
+            overlay_options["name"] = unique_name
+
+        self._overlays_dict[overlay_options["name"]] = {
+            "type": "overlay",
+            "regions_infos": regions_infos,
+            "options": overlay_options,
+        }
+
         self.send(
             {
                 "event_name": "add_overlay",
                 "regions_infos": regions_infos,
-                "graphic_options": {},
+                "graphic_options": overlay_options,
             }
         )
 
@@ -1030,6 +1109,9 @@ class Aladin(anywidget.AnyWidget):
                 "overlay_names": overlay_names,
             }
         )
+
+        for name in overlay_names:
+            self._overlays_dict.pop(name)
 
     @widget_should_be_loaded
     def get_overlays(self) -> List:
