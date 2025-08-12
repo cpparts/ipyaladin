@@ -346,6 +346,14 @@ def test_remove_overlay(
     """
     mock_send = Mock()
     monkeypatch.setattr(Aladin, "send", mock_send)
+
+    # generate expected overlays_dict to remove names from
+    if type(overlay_names) is str:
+        overlay_names_list = [overlay_names]
+    else:
+        overlay_names_list = overlay_names
+    aladin._overlays_dict = {name: {} for name in overlay_names_list}
+
     aladin.remove_overlay(overlay_names)
 
     event_name = mock_send.call_args[0][0]["event_name"]
@@ -358,6 +366,9 @@ def test_remove_overlay(
 
     if isinstance(overlay_names, list):
         assert name_info == overlay_names
+
+    # confirm each overlay was removed from the dict as expected
+    assert not aladin._overlays_dict
 
 
 def test_get_overlays(

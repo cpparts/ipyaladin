@@ -103,7 +103,6 @@ export default class MessageHandler {
       const infos = region["infos"];
       switch (region["region_type"]) {
         case "stcs":
-          console.info(region.options);
           overlay.addFootprints(
             A.footprintsFromSTCS(infos.stcs, region.options),
           );

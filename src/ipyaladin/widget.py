@@ -529,7 +529,7 @@ class Aladin(anywidget.AnyWidget):
         unique_name = name
         i = 1
 
-        while unique_name in self._overlays:
+        while unique_name in self._overlays_dict:
             unique_name = f"{name}_{i}"
             i += 1
 
@@ -558,9 +558,16 @@ class Aladin(anywidget.AnyWidget):
         if not isinstance(markers, list):
             markers = [markers]
 
-        if "name" not in catalog_options:
-            unique_name = self.make_unique_name(name="catalog_python")
-            catalog_options["name"] = unique_name
+        name = catalog_options.get("name", "catalog_python")
+        unique_name = self.make_unique_name(name=name)
+        catalog_options["name"] = unique_name
+
+        if unique_name != name:
+            warnings.warn(
+                f"Overlayer name `{name}` is already in use. Name `{unique_name}` "
+                "will be used instead.",
+                stacklevel=2,
+            )
 
         self._overlays_dict[catalog_options["name"]] = {
             "type": "marker",
@@ -692,9 +699,16 @@ class Aladin(anywidget.AnyWidget):
         if votable_options is None:
             votable_options = {}
 
-        if "name" not in votable_options:
-            unique_name = self.make_unique_name(name="catalog_python")
-            votable_options["name"] = unique_name
+        name = votable_options.get("name", "catalog_python")
+        unique_name = self.make_unique_name(name=name)
+        votable_options["name"] = unique_name
+
+        if unique_name != name:
+            warnings.warn(
+                f"Overlayer name `{name}` is already in use. Name `{unique_name}` "
+                "will be used instead.",
+                stacklevel=2,
+            )
 
         self._overlays_dict[votable_options["name"]] = {
             "type": "catalog",
@@ -911,9 +925,17 @@ class Aladin(anywidget.AnyWidget):
         table_bytes = io.BytesIO()
         table.write(table_bytes, format="votable")
 
-        if "name" not in table_options:
-            unique_name = self.make_unique_name(name="catalog_python")
-            table_options["name"] = unique_name
+        name = table_options.get("name", "catalog_python")
+
+        unique_name = self.make_unique_name(name=name)
+        table_options["name"] = unique_name
+
+        if unique_name != name:
+            warnings.warn(
+                f"Overlayer name `{name}` is already in use. Name `{unique_name}` "
+                "will be used instead.",
+                stacklevel=2,
+            )
 
         self._overlays_dict[table_options["name"]] = {
             "type": "table",
@@ -997,9 +1019,17 @@ class Aladin(anywidget.AnyWidget):
             # Define behavior for each region type
             regions_infos.append(RegionInfos(region_element).to_clean_dict())
 
-        if "name" not in graphic_options:
-            unique_name = self.make_unique_name(name="overlay_python")
-            graphic_options["name"] = unique_name
+        name = graphic_options.get("name", "overlay_python")
+
+        unique_name = self.make_unique_name(name=name)
+        graphic_options["name"] = unique_name
+
+        if unique_name != name:
+            warnings.warn(
+                f"Overlayer name `{name}` is already in use. Name `{unique_name}` "
+                "will be used instead.",
+                stacklevel=2,
+            )
 
         self._overlays_dict[graphic_options["name"]] = {
             "type": "overlay",
@@ -1072,11 +1102,18 @@ class Aladin(anywidget.AnyWidget):
             for region_element in region_list
         ]
 
-        if "name" not in overlay_options:
-            unique_name = self.make_unique_name(name="overlay_python")
-            overlay_options["name"] = unique_name
+        name = overlay_options.get("name", "overlay_python")
+        unique_name = self.make_unique_name(name=name)
+        overlay_options["name"] = unique_name
 
-        self._overlays_dict[overlay_options["name"]] = {
+        if unique_name != name:
+            warnings.warn(
+                f"Overlayer name `{name}` is already in use. Name `{unique_name}` "
+                "will be used instead.",
+                stacklevel=2,
+            )
+
+        self._overlays_dict[unique_name] = {
             "type": "overlay",
             "regions_infos": regions_infos,
             "options": overlay_options,
@@ -1111,6 +1148,11 @@ class Aladin(anywidget.AnyWidget):
         )
 
         for name in overlay_names:
+            if name not in self._overlays_dict:
+                raise ValueError(
+                    f"Cannot remove overlayer `{name}` since this layer does not exist."
+                )
+
             self._overlays_dict.pop(name)
 
     @widget_should_be_loaded
