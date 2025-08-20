@@ -49,6 +49,10 @@ export default class EventHandler {
   /**
    * Updates the view center rotation in the model.
    * WARNING: This method doesn't call model.save_changes()!
+   *
+   * The python rotation traitlet is updated when:
+   * - the user drag the view (positionChanged occuring).
+   * - the user dbl click inside the view which resets the rotation to 0.
    */
   updateRotation() {
     if (!this.isLastDiv()) return;
@@ -96,6 +100,9 @@ export default class EventHandler {
       jsTargetLock.lock();
       const raDec = [position.ra, position.dec];
       this.updateWCS();
+      // When dragging the view, north to east position angle might changes because
+      // the spherical rotation does not keep the north pole up.
+      this.updateRotation();
       this.model.set("_target", `${raDec[0]} ${raDec[1]}`);
       this.model.save_changes();
     });
@@ -128,6 +135,12 @@ export default class EventHandler {
       this.model.save_changes();
     });
 
+    // A better way would be to listen to a "dblclick" event through aladin.on
+    this.aladin.view.catalogCanvas.addEventListener("dblclick", (e) => {
+      this.updateRotation();
+      this.model.save_changes();
+    });
+
     this.model.on("change:_fov", () => {
       if (jsFovLock.locked) {
         jsFovLock.unlock();
@@ -144,12 +157,17 @@ export default class EventHandler {
       // Update WCS and FoV only if this is the last div
       this.updateWCS();
       this.update2AxisFoV();
+      if (!this.isLastDiv()) return;
       this.model.save_changes();
     });
 
     /* Rotation control */
     this.model.on("change:_rotation", () => {
-      this.updateRotation(this.model.get("_rotation"), this.aladinDiv);
+      // Get the rotation value from the python
+      let rotation = this.model.get("_rotation");
+      // And propagate it to Aladin Lite
+      this.aladin.setRotation(rotation);
+
       // Update WCS and FoV only if this is the last div
       this.updateWCS();
       this.update2AxisFoV();
@@ -202,15 +220,10 @@ export default class EventHandler {
       }
     });
 
-    this.aladin.on("rotationChanged", (object) => {
-      if (object["data"] !== undefined) {
-        this.model.send({
-          event_type: "rotation_changed",
-          content: {
-            rotation: object["rotation"],
-          },
-        });
-      }
+    this.aladin.on("rotationChanged", (_) => {
+      this.updateRotation();
+      if (!this.isLastDiv()) return;
+      this.model.save_changes();
     });
 
     this.aladin.on("objectClicked", (clicked) => {
@@ -302,7 +315,6 @@ export default class EventHandler {
     this.eventHandlers = {
       add_marker: this.messageHandler.handleAddMarker,
       change_fov: this.messageHandler.handleChangeFoV,
-      change_rotation: this.messageHandler.handleChangeRotation,
       goto_ra_dec: this.messageHandler.handleGotoRaDec,
       save_view_as_image: this.messageHandler.handleSaveViewAsImage,
       add_fits: this.messageHandler.handleAddFits,
