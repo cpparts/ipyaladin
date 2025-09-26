@@ -550,6 +550,7 @@ class Aladin(anywidget.AnyWidget):
                 "options": catalog_options,
             }
         )
+        self.get_overlays()
 
     def _save_file(self, path: str, buffer: bytes) -> None:
         """Save a file from a buffer.
@@ -673,6 +674,7 @@ class Aladin(anywidget.AnyWidget):
                 "options": votable_options,
             }
         )
+        self.get_overlays()
 
     @widget_should_be_loaded
     def add_fits(self, fits: Union[str, Path, HDUList], **image_options: any) -> None:
@@ -878,6 +880,7 @@ class Aladin(anywidget.AnyWidget):
             {"event_name": "add_table", "options": table_options},
             buffers=[table_bytes.getvalue()],
         )
+        self.get_overlays()
 
     @widget_should_be_loaded
     def add_graphic_overlay_from_region(
@@ -958,6 +961,7 @@ class Aladin(anywidget.AnyWidget):
                 "graphic_options": graphic_options,
             }
         )
+        self.get_overlays()
 
     @widget_should_be_loaded
     def add_overlay_from_stcs(
@@ -1023,6 +1027,7 @@ class Aladin(anywidget.AnyWidget):
                 "graphic_options": overlay_options,
             }
         )
+        self.get_overlays()
 
     @widget_should_be_loaded
     def remove_overlay(self, overlay_name: Union[Iterable[str], str]) -> None:
