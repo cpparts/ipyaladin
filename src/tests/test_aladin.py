@@ -246,7 +246,7 @@ def test_add_graphic_overlay_from_stcs_iterables(
     mock_send = Mock()
     monkeypatch.setattr(Aladin, "send", mock_send)
     aladin.add_graphic_overlay_from_stcs(stcs_strings)
-    regions_info = mock_send.call_args[0][0]["regions_infos"]
+    regions_info = mock_send.call_args_list[0].args[0]["regions_infos"]
     assert isinstance(regions_info, list)
     assert regions_info[0]["infos"]["stcs"] in stcs_strings
 
