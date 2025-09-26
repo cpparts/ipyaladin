@@ -880,7 +880,16 @@ class Aladin(anywidget.AnyWidget):
             {"event_name": "add_table", "options": table_options},
             buffers=[table_bytes.getvalue()],
         )
-        self.get_overlays()
+        if not self._ready:
+            warnings.warn(
+                "The table has not yet finished loading into the widget, so the "
+                "overlays list has not been updated. Please call `get_overlays()` "
+                "to update the list.",
+                UserWarning,
+                stacklevel=2,
+            )
+        else:
+            self.get_overlays()
 
     @widget_should_be_loaded
     def add_graphic_overlay_from_region(
