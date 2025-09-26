@@ -266,7 +266,8 @@ class Aladin(anywidget.AnyWidget):
             self._save_file(message["path"], buffers[0])
         elif event_type == "current_overlays":
             self._overlays = message["content"]["overlays"]
-            self.listener_callback["current_overlays"](message["content"])
+            if "current_overlays" in self.listener_callback:
+                self.listener_callback["current_overlays"](message["content"])
 
     @property
     def selected_objects(self) -> List[Table]:
