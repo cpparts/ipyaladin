@@ -28,6 +28,7 @@ export default class MessageHandler {
       );
     }
     catalog.addSources(markers);
+    this.messageHandler.handleGetOverlays();
   }
 
   handleChangeFoV(msg) {
@@ -75,6 +76,7 @@ export default class MessageHandler {
   handleAddCatalogFromURL(msg) {
     const options = convertOptionNamesToCamelCase(msg["options"] || {});
     this.aladin.addCatalog(A.catalogFromURL(msg["votable_URL"], options));
+    this.messageHandler.handleGetOverlays();
   }
 
   handleAddMOCFromURL(msg) {
@@ -138,6 +140,7 @@ export default class MessageHandler {
           break;
       }
     }
+    this.messageHandler.handleGetOverlays();
   }
 
   handleRemoveOverlay = (msg) => {
@@ -232,6 +235,7 @@ export default class MessageHandler {
       options,
       (catalog) => {
         this.aladin.addCatalog(catalog);
+        this.messageHandler.handleGetOverlays();
       },
       false,
     );
