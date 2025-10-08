@@ -99,7 +99,7 @@ export default class EventHandler {
       }
       jsTargetLock.lock();
 
-      // ensure we only update the view once dragging is completed
+      // only update `_target` once dragging is completed
       if (this.aladin.view.dragging) {
         return;
       }
@@ -135,7 +135,7 @@ export default class EventHandler {
       }
       jsFovLock.lock();
 
-      // ensure we only update the view once zooming is compelte
+      // only update `_fov` once zooming is compelte
       const zoom = this.aladin.view.zoom;
       if (zoom.isZooming && fov != zoom.finalZoom) {
         return;
