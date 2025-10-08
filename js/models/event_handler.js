@@ -98,6 +98,12 @@ export default class EventHandler {
         return;
       }
       jsTargetLock.lock();
+
+      // ensure we only update the view once dragging is completed
+      if (this.aladin.view.dragging) {
+        return;
+      }
+
       const raDec = [position.ra, position.dec];
       this.updateWCS();
       // When dragging the view, north to east position angle might changes because
@@ -128,6 +134,13 @@ export default class EventHandler {
         return;
       }
       jsFovLock.lock();
+
+      // ensure we only update the view once zooming is compelte
+      const zoom = this.aladin.view.zoom;
+      if (zoom.isZooming && fov != zoom.finalZoom) {
+        return;
+      }
+
       // fov MUST be cast into float in order to be sent to the model
       this.updateWCS();
       this.update2AxisFoV();
