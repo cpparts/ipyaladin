@@ -4,9 +4,10 @@ import A from "../aladin_lite";
 let imageCount = 0;
 
 export default class MessageHandler {
-  constructor(aladin, model) {
+  constructor(aladin, model, listenedLayers) {
     this.aladin = aladin;
     this.model = model;
+    this.listenedLayers = listenedLayers;
   }
 
   handleAddMarker(msg) {
@@ -146,6 +147,7 @@ export default class MessageHandler {
     const overlay_names = msg["overlay_names"];
     for (const overlay_name of overlay_names) {
       this.aladin.removeOverlay(overlay_name);
+      this.listenedLayers.delete(overlay_name);
     }
   };
 
@@ -166,6 +168,7 @@ export default class MessageHandler {
 
   handleAddTable(msg, buffers) {
     const options = convertOptionNamesToCamelCase(msg["options"] || {});
+    if (msg["listen_to"] != null) this.listenedLayers.add(msg["listen_to"]);
     const circleOptions = convertOptionNamesToCamelCase(
       options.circleError || {},
     );
@@ -216,9 +219,61 @@ export default class MessageHandler {
       options,
       (catalog) => {
         this.aladin.addCatalog(catalog);
+        this.model.send({
+          event_type: "catalog_loaded",
+          content: {
+            overlay_name: catalog.name,
+          },
+        });
       },
       false,
     );
     URL.revokeObjectURL(url);
+  }
+
+  handleSelectByMask(msg) {
+    const overlay_name = msg["overlay_name"];
+    const mask = msg["mask"];
+
+    // Find the specified overlay.
+    let overlay = null;
+    for (const o of this.aladin.getOverlays()) {
+      if (o.name === overlay_name) {
+        overlay = o;
+        break;
+      }
+    }
+
+    // Supply a select function that uses the mask to determine which sources are selected.
+    if (overlay && overlay.type === "catalog") {
+      overlay.select((src) => {
+        return mask[src.rowIdx];
+      });
+    }
+  }
+
+  handleFilterByMask(msg) {
+    const overlay_name = msg["overlay_name"];
+    const mask = msg["mask"];
+
+    // Find the specified overlay.
+    let overlay = null;
+    for (const o of this.aladin.getOverlays()) {
+      if (o.name === overlay_name) {
+        overlay = o;
+        break;
+      }
+    }
+
+    // Supply a filter function that uses the mask to determine which sources are to be shown.
+    // false means the corresponding source will be hidden.
+    if (overlay && overlay.type === "catalog") {
+      overlay.filterFn = (src) => {
+        return mask[src.rowIdx];
+      };
+
+      // Report the change to ensure a redraw.
+      overlay.reportChange();
+    }
   }
 }
